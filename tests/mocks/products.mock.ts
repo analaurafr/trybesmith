@@ -28,10 +28,16 @@ const okProduct = {
   id: 1,
 };
 
+const validAllReturnArray = [okProduct, okProduct, okProduct];
+
+const validAllResponseBodyArray = [validProductResponse, validProductResponse, validProductResponse];
+
 export default {
   validProduct,
   voidNameProduct,
   voidPriceProduct,
   validProductResponse,
   okProduct,
+  validAllReturnArray,
+  validAllResponseBodyArray,
 };

@@ -5,5 +5,6 @@ import productMiddleware from '../middlewares/products.middleware';
 const productsRoute = Router();
 
 productsRoute.post('/', productMiddleware.validateAddProductBody, productsController.create);
+productsRoute.get('/', productsController.listAll);
 
 export default productsRoute;
