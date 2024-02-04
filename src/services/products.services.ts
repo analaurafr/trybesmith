@@ -1,8 +1,5 @@
 import { Product } from '../types/Product';
-import ProductModel, { 
-  ProductInputtableTypes, 
-  ProductSequelizeModel, 
-} from '../database/models/product.model';
+import ProductModel, { ProductInputtableTypes } from '../database/models/product.model';
 import { ServicesTypes } from '../types/Services';
 
 type ProductWithoutId = Omit<Product, 'orderId'>;
@@ -24,11 +21,11 @@ async function create(product: ProductInputtableTypes): Promise<ServicesTypes<Pr
   return serviceResponse;
 }
 
-async function listAll(): Promise<ServicesTypes<ProductSequelizeModel[]>> {
+async function listAll(): Promise<ServicesTypes<Product[]>> {
   const allProducts = await ProductModel.findAll();
-
-  const serviceResponse: ServicesTypes<ProductSequelizeModel[]> = { 
-    status: 'SUCCESSFUL', data: allProducts,
+  const allProductsToJSON = allProducts.map((product) => product.toJSON());
+  const serviceResponse: ServicesTypes<Product[]> = {
+    status: 'SUCCESSFUL', data: allProductsToJSON,
   };
 
   return serviceResponse;
