@@ -1,17 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import Joi from 'joi';
 import mapHTTPstatus from '../utils/mapHTTPstatus';
-
-const addProduct = Joi.object({
-  name: Joi.string().required(),
-  price: Joi.string().required(),
-  orderId: Joi.number().required(),
-});
+import schema from '../validations/schema';
 
 function validateAddProductBody(req: Request, res: Response, next: NextFunction) {
-  const { error } = addProduct.validate(req.body);
+  const { error } = schema.addProductSchema.validate(req.body);
   if (error) {
-    return res.status(mapHTTPstatus('INVALID_DATA')).json({ message: error.message });
+    const state = error.details[0].type === 'any.required' ? 'INVALID_DATA' : 'UPROCESSABLE_ENTITY';
+    return res.status(mapHTTPstatus(state)).json({ message: error.message });
   }
   next();
 }
