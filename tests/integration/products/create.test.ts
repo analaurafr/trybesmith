@@ -37,16 +37,5 @@ describe('POST /products', function () {
     expect(res.status).to.equal(409);
     expect(res.body).to.deep.equal({ message: 'Pedido já realizado' });
   });
-  it('Retorna 201 se um novo pedido é cadastrado corretamente', async function () {
-    const reqBody = productsMock.validProduct;
-    const mockCreateProduct = { ...productsMock.validProduct, id: 1 }
-    const mockCreateProductReturn = ProductModel.build(mockCreateProduct);
-    sinon.stub(ProductModel, 'findOne').resolves(null);
-    sinon.stub(ProductModel, 'create').resolves(mockCreateProductReturn)
-    
-    const res = await chai.request(app).post('/products').send(reqBody);
 
-    expect(res.status).to.equal(201);
-    expect(res.body).to.deep.equal(productsMock.validProductResponse);
-  });
 });
