@@ -23,7 +23,7 @@ describe("POST /orders", function () {
         Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJIYWdhciIsImlhdCI6MTcwNTQ5ODEzNX0.h9BamLQe2OomFbSwBT3tW5TEANQfodooSJcCiLlThRk',
       })
       .send(orderMock.mockBody)
-    const product = orderModel.build();
+    const product = orderModel.build(orderMock.mockResponse);
     sinon.stub(orderModel, "create").resolves(product);
     expect(resp.status).to.equal(201);
   });
