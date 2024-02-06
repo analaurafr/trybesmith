@@ -1,14 +1,16 @@
 import { Request, Response } from 'express';
-import mapHTTPstatus from '../utils/mapHTTPstatus';
-import loginServices from '../services/login.services';
+import { loginService } from '../services/login.services';
 
-async function login(req: Request, res: Response) {
-  const loginData = req.body;
-  const { status, data } = await loginServices.login(loginData);
-
-  return res.status(mapHTTPstatus(status)).json(data);
-}
-
-export default { 
-  login, 
+export const loginController = async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+  if (typeof username !== 'string' || typeof password !== 'string') {
+    throw new Error('400|"username" and "password" are required');
+  }
+  const user = await loginService(username, password);
+  if (!user) {
+    throw new Error('401|Username or password invalid');
+  }
+  res.status(200).json(user);
 };
+
+export default loginController;

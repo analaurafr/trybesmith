@@ -1,54 +1,40 @@
-import { Op } from 'sequelize';
 import OrderModel from '../database/models/order.model';
 import ProductModel from '../database/models/product.model';
-import { ServicesTypes } from '../types/Services';
-import { Order } from '../types/Order';
-import { Product } from '../types/Product';
 import UserModel from '../database/models/user.model';
+import { OrderSchema } from '../validations/orderSchema';
 
-type OrderWithProducts = Order & { productIds: Product[] };
-type OrderWithProductIds = Order & { productIds: number[] };
-
-async function listAll(): Promise<ServicesTypes<OrderWithProductIds[]>> {
-  const ordersFromModel = await OrderModel.findAll({
-    include: [{ model: ProductModel, as: 'productIds' }],
+type MapedOrder = {
+  id: number;
+  userId: number;
+  productIds?: Array<number>;
+};
+  
+export const getAllOrders = async (): Promise<MapedOrder[]> => {
+  const orders = await OrderModel.findAll({
+    include: [{
+      model: ProductModel,
+      attributes: ['id'],
+      as: 'productIds',
+    }],
   });
+  
+  return orders.map((order) => ({
+    ...order.dataValues,
+    productIds: order.dataValues.productIds?.map(({ id }: { id: number }) => id),
+  }));
+};
 
-  const ordersToJSON = ordersFromModel.map((order) => order.toJSON()) as OrderWithProducts[];
-
-  const orders = ordersToJSON.map((order) => ({
-    ...order,
-    productIds: order.productIds.map((product) => product.id),
-  })) as OrderWithProductIds[];
-
-  const serviceResponse: ServicesTypes<OrderWithProductIds[]> = {
-    status: 'SUCCESSFUL', data: orders,
-  };
-
-  return serviceResponse;
-}
-
-async function createOrder(userId: number, productIds: number[]): Promise<any> {
+export const newOrder = async (productIds: Array<number>, userId: number)
+: Promise<OrderSchema> => {
   const user = await UserModel.findByPk(userId);
-  if (!user) {
-    throw new Error('"userId" not found');
-  }
-  const newOrder = await OrderModel.create({ userId });
-  await ProductModel.update({
-    orderId: newOrder.dataValues.id,
-  }, { 
-    where: { 
-      id: {
-        [Op.in]: productIds,
-      },
-    },
-  });
+  if (!user) throw new Error('404|"userId" not found');
+
+  const { id } = (await OrderModel.create({ userId })).get();
+  Promise.all(productIds.map(async (productId) =>
+    ProductModel.update({ orderId: id }, { where: { id: productId } })));
+
   return {
     userId,
     productIds,
   };
-}
-export default {
-  listAll,
-  createOrder,
 };

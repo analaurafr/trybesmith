@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import ordersController from '../controllers/orders.controller';
+import { newOrder, getAllOrders } from '../controllers/orders.controller';
 import validateToken from '../middlewares/validateToken.middleware';
-import validateOrder from '../middlewares/validationOrders.middleware';
+import validateBody from '../middlewares/validateBody.middleware';
 
 const ordersRoute = Router();
 
-ordersRoute.post('/', validateToken, validateOrder, ordersController.createOrder);
-ordersRoute.get('/', ordersController.listAll);
+ordersRoute.post('/', validateToken, validateBody, newOrder);
+ordersRoute.get('/', getAllOrders);
 
 export default ordersRoute;

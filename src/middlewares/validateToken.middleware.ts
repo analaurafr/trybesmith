@@ -1,21 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import UserModel from '../database/models/user.model';
 
-const { JWT_SECRET } = process.env; 
-
-const validateToken = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization');
-
-  if (!token) {
-    return res.status(401).json({ message: 'Token not found' });
-  }
+const validateToken = async (req: Request, res: Response, next: NextFunction) => {
+  const baererToken = req.headers.authorization;
+  if (!baererToken) throw new Error('401|Token not found');
   try {
-    jwt.verify(token.replace('Bearer ', ''), JWT_SECRET as any);
-   
+    const token = baererToken.split(' ')[1];
+    const result = jwt.verify(token, process.env.JWT_SECRET as string);
+    const { id, username } = result as { id: number; username: string };
+    const user = await UserModel.findByPk(id);
+    if (!user) throw new Error();
+    res.locals.user = { id, username };
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+    throw new Error('401|Invalid token');
+  } 
 };
 
 export default validateToken;

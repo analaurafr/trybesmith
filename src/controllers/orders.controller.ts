@@ -1,25 +1,13 @@
 import { Request, Response } from 'express';
-import mapHTTPstatus from '../utils/mapHTTPstatus';
-import ordersService from '../services/orders.services';
+import * as ordersService from '../services/orders.services';
 
-async function listAll(req: Request, res: Response) {
-  const { status, data } = await ordersService.listAll();
+export const getAllOrders = async (_req: Request, res: Response) => {
+  const orders = await ordersService.getAllOrders();
+  res.status(200).json(orders);
+};
 
-  return res.status(mapHTTPstatus(status)).json(data);
-}
-
-async function createOrder(req:Request, res: Response): Promise<void> {
-  const { userId, productIds } = req.body;
-  try {
-    const result = await ordersService.createOrder(userId, productIds);
-    res.status(201).json(result);
-  } catch (error) {
-    const message = (error instanceof Error) ? error.message : 'Unknown error';
-    res.status(404).json({ message });
-  }
-}
-
-export default {
-  listAll,
-  createOrder,
+export const newOrder = async (req: Request, res: Response) => {
+  const { productIds, userId } = req.body;
+  const order = await ordersService.newOrder(productIds, userId);
+  res.status(201).json(order);
 };
