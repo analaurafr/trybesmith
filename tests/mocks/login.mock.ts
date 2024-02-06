@@ -1,31 +1,27 @@
-const validUser = {
-  username: 'mockedUsername',
-  password: 'mockedPassword'
-};
+const validPassword = 'terrível';
+const hashPassword = '$2a$10$ruqGO620S6DvlG50fvqPlOahf8dSd7MPuXd0t.ovhoLSoPsEQCgBu';
+const validUsername = 'Hera';
 
-const { username, password } = validUser;
+const loginNoUsername = { username: '', password: validPassword };
+const loginNoPassword = { username: validUsername, password: '' };
+const loginNotExistingUser = { username: 'xablau', password: validPassword };
+const loginWithWrongPassword = { username: validUsername, password: 'xablau' };
 
-const voidUsername = {
-  username: '',
-  password,
-};
-
-const voidPassword = {
-  username,
-  password: ''
-};
-
-const validUserModel = {
+const user = {
   id: 1,
-  username,
-  vocation: 'mockedVocation',
-  level: 1,
-  password: '$2a$10$NnGRWEsVyj2j6cHDlv.VyO9v355ue31Hf/us4AOiWg1hc/GxKn2dK',
-}
+  username: validUsername,
+  vocation: 'Goddess',
+  level: 100,
+  password: hashPassword,
+};
+
+const validLogin = { username: validUsername, password: validPassword };
 
 export default {
-  validUser,
-  voidUsername,
-  voidPassword,
-  validUserModel
+  loginNoUsername,
+  loginNoPassword,
+  loginNotExistingUser,
+  loginWithWrongPassword,
+  user,
+  validLogin,
 };

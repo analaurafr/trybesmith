@@ -1,40 +1,45 @@
-import OrderModel from '../database/models/order.model';
+import { literal } from 'sequelize';
+import OrderModel, { OrderSequelizeModel } from '../database/models/order.model';
+import { ServicesTypes } from '../types/Services';
 import ProductModel from '../database/models/product.model';
+import { Order } from '../types/Order';
 import UserModel from '../database/models/user.model';
-import { OrderSchema } from '../validations/orderSchema';
 
-type MapedOrder = {
-  id: number;
-  userId: number;
-  productIds?: Array<number>;
-};
-  
-export const getAllOrders = async (): Promise<MapedOrder[]> => {
+const getAll = async (): Promise<ServicesTypes<OrderSequelizeModel[]>> => {
   const orders = await OrderModel.findAll({
-    include: [{
-      model: ProductModel,
-      attributes: ['id'],
-      as: 'productIds',
-    }],
+    attributes: [
+      'id',
+      'userId',
+      [literal('JSON_ARRAYAGG(productIds.id)'), 'productIds'],
+    ],
+    include: [
+      {
+        model: ProductModel,
+        as: 'productIds',
+        attributes: [],
+      },
+    ],
+    group: ['Order.id'],
+    raw: true,
   });
-  
-  return orders.map((order) => ({
-    ...order.dataValues,
-    productIds: order.dataValues.productIds?.map(({ id }: { id: number }) => id),
-  }));
+  return { status: 200, data: orders };
+};
+const add = async (order: Order): Promise<ServicesTypes<Order>> => {
+  const { userId, productIds } = order;
+  const arrayIds: Promise<[affectedCount: number]>[] = [];
+  const user = await UserModel.findOne({ where: { id: userId } });
+  if (!user) {
+    return { status: 404, data: { message: '"userId" not found' } };
+  }
+  const { id } = (await OrderModel.create({ userId })).dataValues;
+  productIds?.map((productId) => arrayIds
+    .push(ProductModel.update({ orderId: id }, { where: { id: productId } })));
+
+  await Promise.all(arrayIds);
+  return { status: 201, data: order };
 };
 
-export const newOrder = async (productIds: Array<number>, userId: number)
-: Promise<OrderSchema> => {
-  const user = await UserModel.findByPk(userId);
-  if (!user) throw new Error('404|"userId" not found');
-
-  const { id } = (await OrderModel.create({ userId })).get();
-  Promise.all(productIds.map(async (productId) =>
-    ProductModel.update({ orderId: id }, { where: { id: productId } })));
-
-  return {
-    userId,
-    productIds,
-  };
+export default {
+  getAll,
+  add,
 };

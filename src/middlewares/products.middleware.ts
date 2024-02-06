@@ -1,15 +1,28 @@
-import { NextFunction, Request, Response } from 'express';
-import mapHTTPstatus from '../utils/mapHTTPstatus';
-import schema from '../validations/schema';
+import { RequestHandler } from 'express';
 
-function validateAddProductBody(req: Request, res: Response, next: NextFunction) {
-  const { error } = schema.addProductSchema.validate(req.body);
-  if (error) {
-    const state = error.details[0]
-      .type === 'any.required' ? 'INVALID_DATA' : 'UNPROCESSABLE_ENTITY';
-    return res.status(mapHTTPstatus(state)).json({ message: error.message });
+const validateName: RequestHandler = async (req, res, next) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ message: '"name" is required' });
+  if (typeof name !== 'string') return res.status(422).json({ message: '"name" must be a string' });
+  if (name.length < 3) {
+    return res.status(422).json({ message: '"name" length must be at least 3 characters long' });
   }
   next();
-}
+};
 
-export default validateAddProductBody;
+const validatePrice: RequestHandler = async (req, res, next) => {
+  const { price } = req.body;
+  if (!price) return res.status(400).json({ message: '"price" is required' });
+  if (typeof price !== 'string') {
+    return res.status(422).json({ message: '"price" must be a string' });
+  }
+  if (price.length < 3) {
+    return res.status(422).json({ message: '"price" length must be at least 3 characters long' });
+  }
+  next();
+};
+
+export default {
+  validateName,
+  validatePrice,
+};

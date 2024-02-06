@@ -1,21 +1,27 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import UserModel from '../database/models/user.model';
+import jwt from '../utils/jwt';
+import { Login } from '../types/Login';
+import { Token } from '../types/Token';
+import { ServicesTypes } from '../types/Services';
 
-type Token = {
-  token: string;
+const verifyLogin = async (login: Login): Promise<ServicesTypes<Token>> => {
+  if (!login.username || !login.password) {
+    return { status: 400, data: { message: '"username" and "password" are required' } };
+  }
+  const user = await UserModel.findOne({
+    where: { username: login.username },
+  });
+
+  if (!user || !bcrypt.compareSync(login.password, user.dataValues.password)) {
+    return { status: 401, data: { message: 'Username or password invalid' } };
+  }
+
+  const { id, username } = user.dataValues;
+  const token = jwt.sign({ id, username });
+  return { status: 200, data: { token } };
 };
 
-export const loginService = async (username: string, password: string)
-: Promise<Token | null> => {
-  const maybeUser = await UserModel.findOne({ where: { username } });
-  if (!maybeUser) return null;
-  const user = maybeUser.get();
-  if (!bcrypt.compareSync(password, user.password)) return null;
-  const { id } = user;
-  
-  const token = jwt.sign({ id, username }, process.env.JWT_SECRET as string);
-  return { token };
+export default {
+  verifyLogin,
 };
-
-export default loginService;

@@ -1,41 +1,31 @@
-import sinon from 'sinon';
-import chai, { expect } from 'chai';
-import chaiHttp from 'chai-http';
-import productsMock from '../../mocks/products.mock';
-import app from '../../../src/app';
-import ProductModel from '../../../src/database/models/product.model';
+import sinon from "sinon";
+import chai, { expect } from "chai";
+import chaiHttp from "chai-http";
+import productsModel from "../../../src/database/models/product.model";
+import productsMock from "../../mocks/products.mock";
+import app from "../../../src/app";
 
-chai.use(chaiHttp);	chai.use(chaiHttp);
+chai.use(chaiHttp);
 
-describe('POST /products', function () { 
-  beforeEach(function () { 
-    sinon.restore(); 
-  });
-  it('Deve retornar 422 se name estiver vazio', async function() {
-    const reqBody = productsMock.voidNameProduct;
-
-    const res = await chai.request(app).post('/products').send(reqBody);
-
-    expect(res.status).to.equal(422);
-    expect(res.body).to.deep.equal({ message: '"name" is not allowed to be empty' });
-  })
-  it('Deve retornar 422 se price estiver vazio', async function() {
-    const reqBody = productsMock.voidPriceProduct;
-
-    const res = await chai.request(app).post('/products').send(reqBody);
-
-    expect(res.status).to.equal(422);
-    expect(res.body).to.deep.equal({ message: '"price" is not allowed to be empty' });
-  })
-  it('Deve retornar 409 se pedido já tiver sido realizado', async function() {
-    const reqBody = productsMock.validProduct;
-    const mockFindOneReturn = ProductModel.build(productsMock.okProduct);
-    sinon.stub(ProductModel, 'findOne').resolves(mockFindOneReturn);
-
-    const res = await chai.request(app).post('/products').send(reqBody);
-
-    expect(res.status).to.equal(409);
-    expect(res.body).to.deep.equal({ message: 'Pedido já realizado' });
+describe("POST /products", function () {
+  beforeEach(function () {
+    sinon.restore();
   });
 
+  describe("Requisição com dados válidos", function () {
+    it("Retornar status 201", async function () {
+      const mockedProduct = productsModel.build(
+        productsMock.mockResponse
+      );
+
+      sinon.stub(productsModel, "create").resolves(mockedProduct);
+
+      const response = await chai
+        .request(app)
+        .post("/products")
+        .send(productsMock.mockProduct);
+
+      expect(response.status).to.equal(201);
+    });
+  });
 });

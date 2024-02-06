@@ -1,13 +1,10 @@
-type ServiceResponseSuccessType = 'SUCCESSFUL' | 'CREATED';
-type ServiceResponseErrorType = 'INVALID_DATA' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'CONFLICT';
-
 export type ServiceResponseError = {
-  status: ServiceResponseErrorType, 
+  status: number,
   data: { message: string }
 };
 
 export type ServiceResponseSuccess<T> = {
-  status: ServiceResponseSuccessType, 
+  status: number,
   data: T
 };
 

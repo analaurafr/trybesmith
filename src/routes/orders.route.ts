@@ -1,11 +1,17 @@
 import { Router } from 'express';
-import { newOrder, getAllOrders } from '../controllers/orders.controller';
-import validateToken from '../middlewares/validateToken.middleware';
-import validateBody from '../middlewares/validateBody.middleware';
+import ordersController from '../controllers/orders.controller';
+import auth from '../middlewares/auth.middleware';
+import validateOrder from '../middlewares/orders.middleware';
 
 const ordersRoute = Router();
 
-ordersRoute.post('/', validateToken, validateBody, newOrder);
-ordersRoute.get('/', getAllOrders);
+ordersRoute.get('/', ordersController.getAll);
+ordersRoute.post(
+  '/',
+  auth.authValidade,
+  validateOrder.validateOrder,
+  validateOrder.validateUser,
+  ordersController.add,
+);
 
 export default ordersRoute;
